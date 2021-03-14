@@ -35,16 +35,16 @@ class ShippingService
   def continue_while_needed_supplier_not_be_found shipments, currentSupplier, orderedItem
     if shipments.any?
       shipments.each do |el|
-        allSupls = @csvRows.select { |row| el[1] != currentSupplier && row[1] === el[1] && row[0] === orderedItem && Integer(row[3]) > 0}
+        foundSuppliers = @csvRows.select { |row| el[1] != currentSupplier && row[1] === el[1] && row[0] === orderedItem && Integer(row[3]) > 0 }
 
-        return allSupls.any?
+        return foundSuppliers.any?
       end
     end
 
     return false
   end
 
-  def fill_shipments
+  def group_shipments_by_supplier
     shipments = []
     @orderedItems.each do |orderedItem|
       @sortedRows.each do |row|
@@ -54,24 +54,30 @@ class ShippingService
           end
 
           remainCount = Integer(row[3]) - Integer(orderedItem["count"])
-
           gotItems = remainCount < 0 ? Integer(row[3]) : Integer(orderedItem["count"])
           row[3] = remainCount <= 0 ? 0 : row[3]
+
           orderedItem["count"] = orderedItem["count"] - gotItems # instead this action we can check shipments array
           newShipment = [] << row[0] << row[1] << row[2][@shippingRegion] << gotItems
           shipments << newShipment
         end
       end
     end
-    groupedBy = shipments.group_by { |s| s[1] }
+
+    return shipments.group_by { |s| s[1] }
+  end
+
+  def fill_shipments
+    groupedShipments = group_shipments_by_supplier
 
     @resultShipments = []
-    groupedBy.each do |item|
+    groupedShipments.each do |item|
       items = []
       deliveryDateMax = nil
       item[1].each do |innerItem|
         items << { :title => innerItem[0], :count => innerItem[3] }
         plusDay = DateTime.now.advance(days: innerItem[2])
+
         if deliveryDateMax == nil || plusDay > deliveryDateMax
           deliveryDateMax = plusDay
         end
@@ -87,12 +93,12 @@ class ShippingService
 
     if @resultShipments.any?
       # convert all dates to year-month-day format
-      maxDate = (@resultShipments.max_by { |el| el[:delivery_date] })[:delivery_date].strftime("%Y-%m-%d")
+      deliveryDateMax = (@resultShipments.max_by { |el| el[:delivery_date] })[:delivery_date].strftime("%Y-%m-%d")
       @resultShipments.each do |shipment|
         shipment[:delivery_date] = shipment[:delivery_date].strftime("%Y-%m-%d")
       end
 
-      return { :shipments => @resultShipments, :delivery_date => maxDate }
+      return { :shipments => @resultShipments, :delivery_date => deliveryDateMax }
     else
       return { :shipments => [], :delivery_date => nil }
     end
