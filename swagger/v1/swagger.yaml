@@ -3,9 +3,35 @@ openapi: 3.0.1
 info:
   title: API V1
   version: v1
-paths: {}
+paths:
+  "/api/shipping/search":
+    post:
+      summary: search shipping
+      tags:
+      - Shippings
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shippingRegion:
+                  type: string
+                orderedItems:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      itemName:
+                        type: string
+                      count:
+                        type: integer
 servers:
-- url: https://{defaultHost}
+- url: http://{defaultHost}
   variables:
     defaultHost:
       default: localhost:3000
