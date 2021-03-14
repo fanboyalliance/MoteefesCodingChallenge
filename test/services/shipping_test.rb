@@ -38,6 +38,27 @@ class ProjectTest < ActiveSupport::TestCase
     assert days_between === 3
   end
 
+  test "Scenario3_one_supplier_faster_than_other_should_be_3_days" do
+    @params = {
+      :shippingRegion => "eu",
+      :orderedItems => [
+        {
+          'itemName' => "pink_t-shirt",
+          'count' => 1
+        },
+        {
+          'itemName' => "black_mug",
+          'count' => 1
+        }
+      ]}
+    shippings = ShippingService.new(@params, 'testDb.csv').search_shippings
+    assert shippings[:shipments][0][:supplier] === 'Shirts4U'
+    assert shippings[:shipments][0][:items][0][:count] === 1
+    assert shippings[:shipments][0][:items][0][:title] === 'pink_t-shirt'
+    assert shippings[:shipments][0][:items][1][:count] === 1
+    assert shippings[:shipments][0][:items][1][:title] === 'black_mug'
+  end
+
   test "Scenario4_full_max_basket_from_one_supplier" do
     @params = {
       :shippingRegion => "us",

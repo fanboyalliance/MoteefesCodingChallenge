@@ -32,15 +32,31 @@ class ShippingService
     @sortedRows = filteredRows.sort_by! { |el| el[2][@shippingRegion] }
   end
 
+  def continue_while_needed_supplier_not_be_found shipments, currentSupplier, orderedItem
+    if shipments.any?
+      shipments.each do |el|
+        allSupls = @csvRows.select { |row| el[1] != currentSupplier && row[1] === el[1] && row[0] === orderedItem && Integer(row[3]) > 0}
+
+        return allSupls.any?
+      end
+    end
+
+    return false
+  end
+
   def fill_shipments
     shipments = []
     @orderedItems.each do |orderedItem|
       @sortedRows.each do |row|
         if (row[0].include? orderedItem['itemName']) && orderedItem["count"] > 0
+          if continue_while_needed_supplier_not_be_found shipments, row[1], orderedItem['itemName']
+            next
+          end
+
           remainCount = Integer(row[3]) - Integer(orderedItem["count"])
 
           gotItems = remainCount < 0 ? Integer(row[3]) : Integer(orderedItem["count"])
-
+          row[3] = remainCount <= 0 ? 0 : row[3]
           orderedItem["count"] = orderedItem["count"] - gotItems # instead this action we can check shipments array
           newShipment = [] << row[0] << row[1] << row[2][@shippingRegion] << gotItems
           shipments << newShipment
