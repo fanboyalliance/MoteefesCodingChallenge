@@ -37,4 +37,22 @@ class ProjectTest < ActiveSupport::TestCase
     days_between = (Date.parse(shippings[:delivery_date]) - Date.parse(dateNow)).to_i
     assert days_between === 3
   end
+
+  test "Scenario4_full_max_basket_from_one_supplier" do
+    @params = {
+      :shippingRegion => "us",
+      :orderedItems => [
+        {
+    #first Shirts4U with 3 mugs
+    #second Shirts Unlimited with 2 mugs
+          'itemName' => "black_mug",
+          'count' => 5
+        }
+      ]}
+    shippings = ShippingService.new(@params, 'testDb.csv').search_shippings
+    assert shippings[:shipments][0][:supplier] === 'Shirts4U'
+    assert shippings[:shipments][0][:items][0][:count] === 3
+    assert shippings[:shipments][1][:supplier] === 'Shirts Unlimited'
+    assert shippings[:shipments][1][:items][0][:count] === 2
+  end
   end
