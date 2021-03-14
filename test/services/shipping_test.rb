@@ -21,4 +21,20 @@ class ProjectTest < ActiveSupport::TestCase
     days_between = (Date.parse(shippings[:delivery_date]) - Date.parse(dateNow)).to_i
     assert days_between === 6
   end
+
+  test "Scenario2_one_supplier_faster_than_other_should_be_3_days" do
+    @params = {
+      :shippingRegion => "us",
+      :orderedItems => [
+        {
+          'itemName' => "pink_t-shirt",
+          'count' => 2
+        }
+      ]}
+    shippings = ShippingService.new(@params, 'testDb.csv').search_shippings
+    dateNow = DateTime.now.strftime("%Y-%m-%d")
+
+    days_between = (Date.parse(shippings[:delivery_date]) - Date.parse(dateNow)).to_i
+    assert days_between === 3
+  end
   end
