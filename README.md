@@ -1,24 +1,18 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+### 0. change local db in file db.csv
+### 1. run `docker-compose up -d`
+### 2. go to http://localhost:3000/api-docs
+### 3. try query from `api/shipping/search`
+with body smth like this
+```json
+{
+  "shippingRegion": "us",
+  "orderedItems": [
+    {
+      "itemName": "black_mug",
+      "count": 3
+    }
+  ]
+}
+```
